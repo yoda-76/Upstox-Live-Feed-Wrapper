@@ -17,10 +17,15 @@ app.use(express.json());
 
 app.post("/market-feed-init", async (req:Request, res:Response)=>{
     try{
-        await SocketStore.getInstance(req.body.access_token);
-        res.send("success")
+        const socketStore = await SocketStore.getInstance(req.body.access_token);
+        // res.send("success");
+        const isSocketRunning = await socketStore.getUpstoxWs();
+        if(isSocketRunning) res.send("success");
+        else res.status(500).send("error while initializing market feed")
+        
     }catch(error){
-        console.log(error)
+        console.log("error123")
+        res.status(500).send("error while initializing market feed")
     }
 })
 

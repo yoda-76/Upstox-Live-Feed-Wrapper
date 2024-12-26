@@ -29,14 +29,25 @@ export class SocketStore {
     private static access_token = "";
 
     public static getInstance(access_token?:string): SocketStore {
-        if (!SocketStore.instance) {
-            if(!access_token) throw Error("No access token is provided!")
-            SocketStore.instance = new SocketStore();
-            SocketStore.access_token=access_token;
+        try {
+            if (!SocketStore.instance) {
+                if(!access_token) throw Error("No access token is provided!")
+                SocketStore.instance = new SocketStore();
+                SocketStore.access_token=access_token;
+            }
+            return SocketStore.instance;
+        } catch (error) {
+            console.log(error);
+            throw new Error(`Error initializing SocketStore: ${error}`);
         }
-        return SocketStore.instance;
     }
 
+    public async socketRunning() {
+        return SocketStore.privateSocketRunning();
+    }
+    private static privateSocketRunning() {
+        return this.isInitialized
+    }
     private constructor() {
         if (!SocketStore.isInitialized) {
             SocketStore.initializeMarketFeed();
@@ -151,6 +162,7 @@ export class SocketStore {
             const wsUrl = await this.getMarketFeedUrl();
             this.upstoxWs = await this.connectWebSocket(io, wsUrl);
             this.isInitialized = true;
+            console.log(this.isInitialized)
             console.log("WebSocket connection initialized.");
             return this.upstoxWs;
         } catch (error) {
